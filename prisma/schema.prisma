@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Subject {
+  MATH
+  RUSSIAN
+  INF
+  ESSAY
+}
+
+enum Mastery {
+  EXCELLENT
+  PRACTICE
+  GAP
+}
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime   @default(now())
+  progresses   Progress[]
+  messages     Message[]
+}
+
+model Progress {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject   Subject
+  score     Int      @default(35)
+  status    Mastery  @default(GAP)
+  focusTask String?
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, subject])
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject   Subject
+  mode      String
+  role      String
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([userId, subject, createdAt])
+}

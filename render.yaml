@@ -10,7 +10,7 @@ services:
     plan: free
     region: frankfurt
     buildCommand: npm install && npx prisma generate && npm run build
-    startCommand: npx prisma db push && npm run db:seed && npm start
+    startCommand: node scripts/start.mjs
     healthCheckPath: /login
     envVars:
       - key: NODE_VERSION

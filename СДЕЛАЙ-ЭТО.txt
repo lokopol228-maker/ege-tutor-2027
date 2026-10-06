@@ -1,19 +1,24 @@
-# ТЕПЕРЬ ПРОСТО
+# ОШИБКА P1001 = НЕТ СВЯЗИ С БАЗОЙ
 
-Ключ ИИ больше НЕ нужно искать в Render / GitHub.
-Я сделал страницу «Настройки» на сайте.
+Это НЕ про GROQ. Чиним DATABASE_URL.
 
-## На Render заполни ТОЛЬКО 3 поля:
-1) ADMIN_EMAIL — твой email для входа
-2) ADMIN_PASSWORD — пароль (от 8 символов)
-3) NEXTAUTH_URL — адрес сайта после первого деплоя
-   (пример: https://ege-tutor-2027.onrender.com)
+## Сделай на Render:
 
-GEMINI_API_KEY и GROQ_API_KEY на Render — ПРОПУСТИ / оставь пустыми.
+1) Вверху/слева открой проект ege-tutor-2027
+2) Найди сервис Postgres (часто называется ege-tutor-db)
+   - если базы НЕТ → New → Postgres → Free → Create
+3) Зайди в Postgres → вкладка Connect / Info
+4) Скопируй Internal Database URL
+   (строка начинается с postgresql://...)
+5) Открой Web Service ege-tutor-2027 → Environment
+6) Найди DATABASE_URL
+   - если нет → Add Environment Variable
+   - Key: DATABASE_URL
+   - Value: вставь Internal Database URL
+7) Проверь также:
+   - ADMIN_EMAIL
+   - ADMIN_PASSWORD
+   - NEXTAUTH_URL (после первого успешного деплоя = URL сайта)
+8) Save → Manual Deploy → Deploy latest commit
 
-## После деплоя:
-1) Открой сайт
-2) Войди email + пароль
-3) Нажми «Настройки ИИ»
-4) Если есть ключ Groq/OpenRouter — вставь там
-5) Если ключа нет — просто учись (офлайн-репетитор уже работает)
+GROQ/GEMINI на Render не трогай.

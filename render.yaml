@@ -19,21 +19,13 @@ services:
         fromDatabase:
           name: ege-tutor-db
           property: connectionString
-      - key: NEXTAUTH_URL
-        sync: false
       - key: NEXTAUTH_SECRET
         generateValue: true
+      - key: NEXTAUTH_URL
+        sync: false
       - key: ADMIN_EMAIL
         sync: false
       - key: ADMIN_PASSWORD
         sync: false
       - key: ADMIN_NAME
         value: Ученик
-      - key: GROQ_API_KEY
-        sync: false
-      - key: GROQ_MODEL
-        value: llama-3.3-70b-versatile
-      - key: GEMINI_API_KEY
-        sync: false
-      - key: GEMINI_MODEL
-        value: gemini-2.0-flash

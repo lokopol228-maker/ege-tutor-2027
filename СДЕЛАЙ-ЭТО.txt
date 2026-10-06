@@ -1,33 +1,19 @@
-# ТЕБЕ ОСТАЛОСЬ 3 ШАГА (Gemini недоступен в РФ — берём Groq)
+# ТЕПЕРЬ ПРОСТО
 
-Я уже сделал сайт, Node, Git и локальный git.
-Gemini AI Studio у тебя открыл страницу регионов = ключ Gemini сейчас не получить.
-Делаем бесплатный ключ через Groq.
+Ключ ИИ больше НЕ нужно искать в Render / GitHub.
+Я сделал страницу «Настройки» на сайте.
 
-## Шаг A — ключ ИИ через Groq (3 минуты)
-1. Открой: https://console.groq.com/keys
-2. Войди (Google/GitHub)
-3. Create API Key → скопируй в Блокнот
-4. Это будет `GROQ_API_KEY`
+## На Render заполни ТОЛЬКО 3 поля:
+1) ADMIN_EMAIL — твой email для входа
+2) ADMIN_PASSWORD — пароль (от 8 символов)
+3) NEXTAUTH_URL — адрес сайта после первого деплоя
+   (пример: https://ege-tutor-2027.onrender.com)
 
-## Шаг B — GitHub (3 минуты)
-1. Открой: https://github.com/new
-2. Name: `ege-tutor-2027`
-3. Private → Create repository
-4. Пришли мне ссылку:
-   https://github.com/ТВОЙ_НИК/ege-tutor-2027.git
-Я сам загружу код.
+GEMINI_API_KEY и GROQ_API_KEY на Render — ПРОПУСТИ / оставь пустыми.
 
-## Шаг C — Render (после загрузки кода)
-1. https://dashboard.render.com → New → Blueprint → репо `ege-tutor-2027`
-2. Заполни:
-   - ADMIN_EMAIL
-   - ADMIN_PASSWORD
-   - GROQ_API_KEY  ← ключ из шага A
-3. Deploy
-4. Потом поставь NEXTAUTH_URL = адрес сайта и Redeploy
-
----
-Сейчас: сделай Шаг A, напиши «ключ groq есть», потом Шаг B со ссылкой GitHub.
-
-Без ключа сайт тоже работает (офлайн-репетитор), но живой ИИ будет через Groq.
+## После деплоя:
+1) Открой сайт
+2) Войди email + пароль
+3) Нажми «Настройки ИИ»
+4) Если есть ключ Groq/OpenRouter — вставь там
+5) Если ключа нет — просто учись (офлайн-репетитор уже работает)

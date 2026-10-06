@@ -36,8 +36,18 @@ export default async function DashboardPage() {
             траекторию. Прогресс сохраняется после каждого диалога.
           </p>
         </div>
-        <SignOutButton />
+        <div style={{ display: "grid", gap: "0.5rem" }}>
+          <Link href="/settings" className="ghost-btn" style={{ textAlign: "center" }}>
+            Настройки ИИ
+          </Link>
+          <SignOutButton />
+        </div>
       </header>
+
+      <p className="card note" style={{ marginBottom: "1rem" }}>
+        Ключ ИИ вставляется в <Link href="/settings">Настройках</Link> на этом сайте.
+        Поля Gemini/Groq на Render можно не трогать.
+      </p>
 
       <section className="grid-subjects">
         {(Object.keys(SUBJECTS) as SubjectKey[]).map((key) => {

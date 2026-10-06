@@ -66,6 +66,11 @@ export async function POST(request: Request) {
     take: 40,
   });
 
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { llmApiKey: true, llmProvider: true },
+  });
+
   let text: string;
   let provider = "offline";
 
@@ -77,6 +82,10 @@ export async function POST(request: Request) {
         role: item.role as "user" | "assistant",
         content: item.content,
       })),
+      userLlm: {
+        apiKey: user?.llmApiKey,
+        provider: user?.llmProvider,
+      },
     });
     text = result.text;
     provider = result.provider;

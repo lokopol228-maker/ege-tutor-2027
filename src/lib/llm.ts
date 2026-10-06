@@ -5,32 +5,63 @@ import { offlineTutorReply } from "@/lib/offline-tutor";
 
 type ChatTurn = { role: "user" | "assistant"; content: string };
 
-export type LlmProvider = "gemini" | "groq" | "openai" | "offline";
+export type LlmProvider = "gemini" | "groq" | "openai" | "openrouter" | "offline";
 
-export function detectProvider(): LlmProvider {
-  // Groq first: Gemini часто недоступен в РФ/некоторых регионах
-  if (process.env.GROQ_API_KEY) return "groq";
-  if (process.env.GEMINI_API_KEY) return "gemini";
-  if (process.env.OPENAI_API_KEY) return "openai";
-  return "offline";
+type UserLlmPrefs = {
+  apiKey?: string | null;
+  provider?: string | null;
+};
+
+function resolveProvider(prefs?: UserLlmPrefs): {
+  provider: LlmProvider;
+  apiKey?: string;
+} {
+  const userKey = prefs?.apiKey?.trim();
+  const userProvider = (prefs?.provider || "groq").toLowerCase();
+
+  if (userKey) {
+    if (userProvider === "openrouter") {
+      return { provider: "openrouter", apiKey: userKey };
+    }
+    if (userProvider === "openai") {
+      return { provider: "openai", apiKey: userKey };
+    }
+    return { provider: "groq", apiKey: userKey };
+  }
+
+  if (process.env.GROQ_API_KEY) {
+    return { provider: "groq", apiKey: process.env.GROQ_API_KEY };
+  }
+  if (process.env.OPENROUTER_API_KEY) {
+    return { provider: "openrouter", apiKey: process.env.OPENROUTER_API_KEY };
+  }
+  if (process.env.GEMINI_API_KEY) {
+    return { provider: "gemini", apiKey: process.env.GEMINI_API_KEY };
+  }
+  if (process.env.OPENAI_API_KEY) {
+    return { provider: "openai", apiKey: process.env.OPENAI_API_KEY };
+  }
+
+  return { provider: "offline" };
 }
 
 export async function generateTutorReply(params: {
   subject: SubjectKey;
   mode: ModeId;
   history: ChatTurn[];
+  userLlm?: UserLlmPrefs;
 }): Promise<{ text: string; provider: LlmProvider }> {
-  const provider = detectProvider();
+  const { provider, apiKey } = resolveProvider(params.userLlm);
   const system = buildSystemPrompt(params.subject, params.mode);
 
-  if (provider === "gemini") {
-    const text = await callGemini(system, params.history);
+  if (provider === "gemini" && apiKey) {
+    const text = await callGemini(system, params.history, apiKey);
     return { text, provider };
   }
 
-  if (provider === "groq") {
+  if (provider === "groq" && apiKey) {
     const text = await callOpenAICompatible({
-      apiKey: process.env.GROQ_API_KEY!,
+      apiKey,
       baseURL: "https://api.groq.com/openai/v1",
       model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
       system,
@@ -39,9 +70,20 @@ export async function generateTutorReply(params: {
     return { text, provider };
   }
 
-  if (provider === "openai") {
+  if (provider === "openrouter" && apiKey) {
     const text = await callOpenAICompatible({
-      apiKey: process.env.OPENAI_API_KEY!,
+      apiKey,
+      baseURL: "https://openrouter.ai/api/v1",
+      model: process.env.OPENROUTER_MODEL || "meta-llama/llama-3.1-8b-instruct:free",
+      system,
+      history: params.history,
+    });
+    return { text, provider };
+  }
+
+  if (provider === "openai" && apiKey) {
+    const text = await callOpenAICompatible({
+      apiKey,
       baseURL: process.env.OPENAI_BASE_URL || undefined,
       model: process.env.OPENAI_MODEL || "gpt-4o-mini",
       system,
@@ -60,10 +102,13 @@ export async function generateTutorReply(params: {
   };
 }
 
-async function callGemini(system: string, history: ChatTurn[]): Promise<string> {
-  const key = process.env.GEMINI_API_KEY!;
+async function callGemini(
+  system: string,
+  history: ChatTurn[],
+  apiKey: string,
+): Promise<string> {
   const model = process.env.GEMINI_MODEL || "gemini-2.0-flash";
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
   const contents = history.map((item) => ({
     role: item.role === "assistant" ? "model" : "user",

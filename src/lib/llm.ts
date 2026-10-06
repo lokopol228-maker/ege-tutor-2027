@@ -8,8 +8,9 @@ type ChatTurn = { role: "user" | "assistant"; content: string };
 export type LlmProvider = "gemini" | "groq" | "openai" | "offline";
 
 export function detectProvider(): LlmProvider {
-  if (process.env.GEMINI_API_KEY) return "gemini";
+  // Groq first: Gemini часто недоступен в РФ/некоторых регионах
   if (process.env.GROQ_API_KEY) return "groq";
+  if (process.env.GEMINI_API_KEY) return "gemini";
   if (process.env.OPENAI_API_KEY) return "openai";
   return "offline";
 }

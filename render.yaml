@@ -1,8 +1,3 @@
-databases:
-  - name: ege-tutor-db
-    plan: free
-    postgresMajorVersion: "16"
-
 services:
   - type: web
     name: ege-tutor-2027
@@ -15,10 +10,9 @@ services:
     envVars:
       - key: NODE_VERSION
         value: "22"
+      # Локальный SQLite — без Render Postgres (она у тебя не поднималась)
       - key: DATABASE_URL
-        fromDatabase:
-          name: ege-tutor-db
-          property: connectionString
+        value: file:./prisma/data/prod.db
       - key: NEXTAUTH_SECRET
         generateValue: true
       - key: NEXTAUTH_URL

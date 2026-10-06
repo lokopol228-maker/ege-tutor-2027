@@ -1,24 +1,32 @@
-# ОШИБКА P1001 = НЕТ СВЯЗИ С БАЗОЙ
+# ЧТО СДЕЛАТЬ ТЕБЕ (я уже убрал сломанную Postgres)
 
-Это НЕ про GROQ. Чиним DATABASE_URL.
+База теперь встроена (SQLite). Render Postgres больше не нужна.
 
-## Сделай на Render:
+## 1) Environment на Render
+Открой ege-tutor-2027 → Environment → Edit
 
-1) Вверху/слева открой проект ege-tutor-2027
-2) Найди сервис Postgres (часто называется ege-tutor-db)
-   - если базы НЕТ → New → Postgres → Free → Create
-3) Зайди в Postgres → вкладка Connect / Info
-4) Скопируй Internal Database URL
-   (строка начинается с postgresql://...)
-5) Открой Web Service ege-tutor-2027 → Environment
-6) Найди DATABASE_URL
-   - если нет → Add Environment Variable
-   - Key: DATABASE_URL
-   - Value: вставь Internal Database URL
-7) Проверь также:
-   - ADMIN_EMAIL
-   - ADMIN_PASSWORD
-   - NEXTAUTH_URL (после первого успешного деплоя = URL сайта)
-8) Save → Manual Deploy → Deploy latest commit
+Поставь/проверь:
+- DATABASE_URL = file:./prisma/data/prod.db
+  (замени старую postgresql://... на эту строку!)
+- ADMIN_EMAIL = твой email
+- ADMIN_PASSWORD = твой пароль (от 8 символов)
+- NEXTAUTH_URL = пока можно оставить пустым, потом впишешь URL сайта
+- GEMINI / GROQ — не трогай / можно удалить
 
-GROQ/GEMINI на Render не трогай.
+Save Changes
+
+## 2) Deploy
+Manual Deploy → Deploy latest commit
+Дождись зелёного статуса (не Failed)
+
+## 3) После успеха
+Скопируй URL сайта (типа https://ege-tutor-2027.onrender.com)
+Environment → NEXTAUTH_URL = этот URL
+Save → ещё один Deploy
+
+## 4) Войти
+Открой сайт → email/пароль → кабинет
+Ключ ИИ (если будет) — в «Настройки ИИ» на сайте
+
+Важно: на бесплатном Render прогресс может сбрасываться после долгого сна сервиса.
+Для постоянной базы потом можно подключить Neon — скажи, помогу.

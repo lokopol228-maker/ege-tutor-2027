@@ -1,3 +1,4 @@
+import { mkdirSync } from "node:fs";
 import { spawn } from "node:child_process";
 
 function run(command, args) {
@@ -12,7 +13,13 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-const maxAttempts = 10;
+mkdirSync("prisma/data", { recursive: true });
+
+if (!process.env.DATABASE_URL) {
+  process.env.DATABASE_URL = "file:./prisma/data/prod.db";
+}
+
+const maxAttempts = 5;
 
 for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
   console.log(`[start] prisma db push (попытка ${attempt}/${maxAttempts})`);
@@ -20,13 +27,11 @@ for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
   if (ok) break;
 
   if (attempt === maxAttempts) {
-    console.error(
-      "[start] База недоступна. Render → Postgres → Internal Database URL → Web Service Environment → DATABASE_URL",
-    );
+    console.error("[start] Не удалось создать базу SQLite.");
     process.exit(1);
   }
 
-  await sleep(5000);
+  await sleep(2000);
 }
 
 console.log("[start] seed");

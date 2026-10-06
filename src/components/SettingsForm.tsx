@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import { signOut } from "next-auth/react";
 
 export function SettingsForm() {
   const [provider, setProvider] = useState("groq");
@@ -10,15 +11,27 @@ export function SettingsForm() {
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
 
+  async function loadSettings() {
+    const res = await fetch("/api/settings");
+    const data = await res.json().catch(() => ({}));
+
+    if (res.status === 409 || data.error === "session_stale") {
+      setStatus(data.message || "Сессия устарела. Выйди и войди снова.");
+      return;
+    }
+
+    if (!res.ok) {
+      setStatus(data.message || "Не удалось загрузить настройки.");
+      return;
+    }
+
+    setProvider(data.provider || "groq");
+    setHasKey(Boolean(data.hasKey));
+    setPreview(data.keyPreview || null);
+  }
+
   useEffect(() => {
-    fetch("/api/settings")
-      .then((r) => r.json())
-      .then((data) => {
-        setProvider(data.provider || "groq");
-        setHasKey(Boolean(data.hasKey));
-        setPreview(data.keyPreview || null);
-      })
-      .catch(() => setStatus("Не удалось загрузить настройки."));
+    loadSettings().catch(() => setStatus("Не удалось загрузить настройки."));
   }, []);
 
   async function onSubmit(event: FormEvent) {
@@ -35,28 +48,39 @@ export function SettingsForm() {
       }),
     });
 
+    const data = await res.json().catch(() => ({}));
     setLoading(false);
 
+    if (res.status === 409 || data.error === "session_stale") {
+      setStatus(data.message || "Сессия устарела. Выйди и войди снова.");
+      return;
+    }
+
     if (!res.ok) {
-      setStatus("Ошибка сохранения.");
+      setStatus(data.message || "Ошибка сохранения.");
       return;
     }
 
     setApiKey("");
     setStatus("Сохранено. Можно идти учиться.");
-    const fresh = await fetch("/api/settings").then((r) => r.json());
-    setHasKey(Boolean(fresh.hasKey));
-    setPreview(fresh.keyPreview || null);
+    await loadSettings();
   }
 
   async function clearKey() {
     setLoading(true);
-    await fetch("/api/settings", {
+    const res = await fetch("/api/settings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ clearKey: true }),
     });
     setLoading(false);
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setStatus(data.message || "Не удалось удалить ключ.");
+      return;
+    }
+
     setHasKey(false);
     setPreview(null);
     setStatus("Ключ удалён. Работает офлайн-репетитор.");
@@ -95,7 +119,11 @@ export function SettingsForm() {
           type="password"
           value={apiKey}
           onChange={(e) => setApiKey(e.target.value)}
-          placeholder={hasKey ? "Ключ уже сохранён — вставь новый, чтобы заменить" : "Вставь ключ сюда"}
+          placeholder={
+            hasKey
+              ? "Ключ уже сохранён — вставь новый, чтобы заменить"
+              : "Вставь ключ сюда"
+          }
           autoComplete="off"
         />
       </label>
@@ -115,13 +143,21 @@ export function SettingsForm() {
         </button>
       ) : null}
 
+      <button
+        type="button"
+        className="ghost-btn"
+        onClick={() => signOut({ callbackUrl: "/login" })}
+      >
+        Выйти и войти заново
+      </button>
+
       <div className="note">
         <p>
-          <strong>Groq:</strong> https://console.groq.com → войти → API Keys
+          Если видишь ошибку сохранения — сначала нажми «Выйти и войти заново», потом
+          снова вставь ключ.
         </p>
         <p>
-          Если Groq не открывается — учись без ключа (офлайн) или попробуй OpenRouter:
-          https://openrouter.ai/keys
+          <strong>Groq:</strong> https://console.groq.com → API Keys
         </p>
       </div>
     </form>
